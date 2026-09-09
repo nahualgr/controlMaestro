@@ -1,0 +1,36 @@
+/* Identidad visual mínima de controlMaestro: paleta tipo botica, sobre
+   Bootstrap base, sin sobrecargar la interfaz de trabajo. */
+:root {
+  --brand-verde: #2d6a4f;
+  --brand-verde-oscuro: #1b4332;
+  --brand-fondo: #f7f7f2;
+}
+
+body {
+  background-color: var(--brand-fondo);
+}
+
+.btn-brand {
+  background-color: var(--brand-verde);
+  border-color: var(--brand-verde);
+  color: #fff;
+}
+.btn-brand:hover, .btn-brand:focus {
+  background-color: var(--brand-verde-oscuro);
+  border-color: var(--brand-verde-oscuro);
+  color: #fff;
+}
+.btn-brand:disabled {
+  background-color: #9db8ac;
+  border-color: #9db8ac;
+}
+
+.btn-brand-outline {
+  color: var(--brand-verde-oscuro);
+  border-color: var(--brand-verde);
+}
+.btn-brand-outline:hover {
+  background-color: var(--brand-verde);
+  border-color: var(--brand-verde);
+  color: #fff;
+}
