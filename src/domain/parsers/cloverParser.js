@@ -59,13 +59,15 @@ function numOrNull(v) {
   return isNaN(n) ? null : n
 }
 
-// El "Dispositivo" trae un texto libre del tipo "Terminal 69322490" o
-// "Terminal C045LQ32740640" (el identificador puede ser numérico o
-// alfanumérico según el modelo de terminal).
+// El "Dispositivo" trae distintos formatos según el modelo de terminal:
+// a veces "Terminal 69322490" (con prefijo), y a veces el número de serie
+// crudo sin prefijo, ej. "C045LQ32740640". Se contemplan ambos casos.
 function extraerTerminalDeDispositivo(dispositivo) {
-  const s = (dispositivo ?? '').toString()
+  const s = (dispositivo ?? '').toString().trim()
+  if (!s) return null
   const match = s.match(/Terminal\s+([A-Za-z0-9]+)/i)
-  return match ? match[1] : null
+  if (match) return match[1]
+  return s
 }
 
 // El campo Nota trae, para QR: "ID QR: ..., ID Autorización: ..., Lote: ...,
