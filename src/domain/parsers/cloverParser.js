@@ -59,10 +59,12 @@ function numOrNull(v) {
   return isNaN(n) ? null : n
 }
 
-// El "Dispositivo" trae un texto libre del tipo "Terminal 69322490".
+// El "Dispositivo" trae un texto libre del tipo "Terminal 69322490" o
+// "Terminal C045LQ32740640" (el identificador puede ser numérico o
+// alfanumérico según el modelo de terminal).
 function extraerTerminalDeDispositivo(dispositivo) {
   const s = (dispositivo ?? '').toString()
-  const match = s.match(/Terminal\s+(\d+)/i)
+  const match = s.match(/Terminal\s+([A-Za-z0-9]+)/i)
   return match ? match[1] : null
 }
 
