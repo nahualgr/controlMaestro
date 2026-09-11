@@ -1,14 +1,16 @@
-// Orquesta el pipeline completo: separar canal -> reconstruir eventos ->
-// clasificar -> detectar huérfanos. Punto de entrada único del dominio.
+// Orquesta el pipeline completo: enriquecer terminal -> separar canal ->
+// reconstruir eventos -> clasificar -> detectar huérfanos.
 import { separarVentasPorCanal } from './normalizers/channelResolver.js'
 import { construirTodosLosEventos } from './reconciliation/eventBuilder.js'
 import { clasificarTodos } from './reconciliation/classifier.js'
 import { encontrarCobrosSinVenta } from './reconciliation/orphanFinder.js'
+import { enriquecerTerminalesClover } from './config/terminalEnricher.js'
 
-export function ejecutarConciliacion({ ventaRows, cloverRows, mpRows }) {
+export function ejecutarConciliacion({ ventaRows, cloverRows: cloverRowsCrudo, mpRows, mapeo, mapeoTerminales }) {
+  const cloverRows = enriquecerTerminalesClover(cloverRowsCrudo, mapeoTerminales)
   const { clover, mpDirecto } = separarVentasPorCanal(ventaRows)
   const eventos = construirTodosLosEventos({ clover, mpDirecto })
-  const resultados = clasificarTodos(eventos, { cloverRows, mpRows })
+  const resultados = clasificarTodos(eventos, { cloverRows, mpRows, mapeo })
   const cobrosSinVenta = encontrarCobrosSinVenta({ cloverRows, mpRows })
 
   const resumen = {

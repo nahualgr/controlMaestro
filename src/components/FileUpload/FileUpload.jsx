@@ -7,8 +7,8 @@ const CAMPOS = [
 ]
 
 export default function FileUpload() {
-  const { archivos, cargarArchivo, procesar, estado, error } = useReconciliation()
-  const listoParaProcesar = archivos.ventas && archivos.clover && archivos.mp
+  const { archivos, cargarArchivo, detectarTarjetas, estado, error } = useReconciliation()
+  const listoParaContinuar = archivos.ventas && archivos.clover && archivos.mp
 
   return (
     <div className="card shadow-sm border-0 mb-4">
@@ -36,10 +36,14 @@ export default function FileUpload() {
 
         <button
           className="btn btn-brand mt-4"
-          disabled={!listoParaProcesar || estado === 'procesando'}
-          onClick={procesar}
+          disabled={!listoParaContinuar || estado === 'detectando' || estado === 'procesando'}
+          onClick={detectarTarjetas}
         >
-          {estado === 'procesando' ? 'Procesando…' : 'Conciliar'}
+          {estado === 'detectando'
+            ? 'Analizando archivos…'
+            : estado === 'procesando'
+            ? 'Conciliando…'
+            : 'Continuar'}
         </button>
       </div>
     </div>

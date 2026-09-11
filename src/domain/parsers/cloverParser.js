@@ -1,6 +1,10 @@
-// Parsea el CSV de Clover. Maneja el caso especial de QR PosNet, donde
-// "ID del terminal" viene vacío y el terminal solo está en el texto libre
-// del campo "Dispositivo" (ej. "Terminal 69322490").
+// Parsea el CSV de Clover. El terminal SIEMPRE se toma del campo
+// "Dispositivo" (texto libre tipo "Terminal 69322490"), tanto para tarjeta
+// como para QR — se dejó de usar "ID del terminal" (que además viene vacío
+// para QR) para tener una única fuente confiable en ambos casos.
+// El terminal real de Ventas para cada "terminalDispositivo" lo define el
+// usuario a mano (ver terminalMappingStore.js / terminalDetector.js): acá
+// solo se deja el identificador crudo del dispositivo.
 import Papa from 'papaparse'
 
 /**
@@ -12,9 +16,10 @@ import Papa from 'papaparse'
  * @property {number} importe
  * @property {number} importeExtraCash - "Importe de retiro en efectivo", 0 si no aplica
  * @property {string} codigoAutorizacion
- * @property {string} terminal         - últimos 3 dígitos, como string
+ * @property {string} terminalDispositivo - identificador crudo extraído de "Dispositivo"
+ * @property {number|null} terminal    - terminal ya traducido a Ventas (se completa después, vía mapeo)
  * @property {string} lote
- * @property {string} cupon            - "Núm. de recibo"
+ * @property {number|null} cupon       - "Núm. de recibo"
  * @property {string} resultado        - "SUCCESS" | "FAIL"
  * @property {Date|null} fecha
  */
@@ -26,14 +31,8 @@ export function parseCloverCsv(csvText) {
 
 function normalizeCloverRow(r, idx) {
   const medioDePago = (r['Medio de pago'] ?? '').trim()
-  const esQr = medioDePago.toLowerCase().includes('qr')
-
   const nota = r['Nota'] ?? ''
   const notaParsed = parseNota(nota)
-
-  const terminal = esQr
-    ? extraerTerminalDeDispositivo(r['Dispositivo'])
-    : last3(r['ID del terminal'])
 
   return {
     filaIndice: idx,
@@ -43,7 +42,8 @@ function normalizeCloverRow(r, idx) {
     importe: Number(r['Importe'] ?? 0),
     importeExtraCash: Number(r['Importe de retiro en efectivo'] ?? 0) || 0,
     codigoAutorizacion: (r['Código de autorización de la tarjeta'] ?? '').toString().trim(),
-    terminal: terminal === null ? null : Number(terminal),
+    terminalDispositivo: extraerTerminalDeDispositivo(r['Dispositivo']),
+    terminal: null, // se completa en el paso de emparejamiento (terminalEnricher.js)
     lote: (notaParsed.lote ?? r['Núm. de lote'] ?? '').toString().trim(),
     cupon: numOrNull(notaParsed.cupon ?? r['Núm. de recibo']),
     resultado: (r['Resultado'] ?? '').trim(),
@@ -59,18 +59,11 @@ function numOrNull(v) {
   return isNaN(n) ? null : n
 }
 
-function last3(idTerminal) {
-  const s = (idTerminal ?? '').toString().trim()
-  if (!s) return null
-  return s.slice(-3)
-}
-
 // El "Dispositivo" trae un texto libre del tipo "Terminal 69322490".
 function extraerTerminalDeDispositivo(dispositivo) {
   const s = (dispositivo ?? '').toString()
   const match = s.match(/Terminal\s+(\d+)/i)
-  if (!match) return null
-  return match[1].slice(-3)
+  return match ? match[1] : null
 }
 
 // El campo Nota trae, para QR: "ID QR: ..., ID Autorización: ..., Lote: ...,

@@ -1,23 +1,18 @@
-// Equivalencias de nombre de tarjeta entre Clover y Ventas (especificación §4).
-// Todo lo que Clover reporta como QR (cualquier billetera) se normaliza a
-// "QR" en Ventas, ya que el vendedor nunca carga la billetera específica.
-const MAPEO_TARJETAS = {
-  'VISA DEBITO': 'Visa Débito',
-  'VISA CREDITO': 'Visa Crédito',
-  'MC DEBIT': 'Mastercard Débito',
-  'MASTERCARD DEBITO': 'Mastercard Débito',
-  'MC PREPAGA': 'Mastercard Débito',
-  'MASTERCARD PREPAGA': 'Mastercard Débito',
-  'MC CREDIT': 'Mastercard Crédito',
-  'MASTERCARD CREDITO': 'Mastercard Crédito',
-}
-
-export function normalizarNombreTarjetaClover(marcaTarjetaClover, esQr) {
-  if (esQr) return 'QR'
+// Traduce el nombre de tarjeta de Clover al código usado en Ventas.
+// El mapeo NO trae valores por defecto adivinados: se arma 100% a mano por
+// el usuario desde el paso de emparejamiento al subir los archivos (ver
+// cardMappingStore.js y cardNameDetector.js).
+// La única regla fija (no configurable) es que toda operación QR PosNet de
+// Clover, sea cual sea la billetera real (Mercado Pago, MODO, Naranja X,
+// Ualá, etc.), se traduce siempre al código "QRPCT" en Ventas.
+export function normalizarNombreTarjetaClover(mapeo, marcaTarjetaClover, esQr) {
+  if (esQr) return 'QRPCT'
   const clave = (marcaTarjetaClover ?? '').toUpperCase().trim()
-  return MAPEO_TARJETAS[clave] ?? marcaTarjetaClover
+  // null = no hay equivalencia configurada; el llamador debe tratarlo como
+  // un caso a revisar, nunca asumir un valor.
+  return mapeo[clave] ?? null
 }
 
-export function esOperacionQr(medioDePagoClover) {
-  return (medioDePagoClover ?? '').toLowerCase().includes('qr')
+export function esOperacionQr(medioDePago) {
+  return (medioDePago ?? '').toLowerCase().includes('qr')
 }

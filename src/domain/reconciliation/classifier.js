@@ -4,7 +4,7 @@ import { matchearEventoClover } from './cloverMatcher.js'
 import { matchearEventoMp } from './mpMatcher.js'
 import { resolverDividido } from './dividedMatcher.js'
 
-export function clasificarEvento(evento, { cloverRows, mpRows }) {
+export function clasificarEvento(evento, { cloverRows, mpRows, mapeo }) {
   if (evento.tipoOperacion === 'Anulado') {
     return { ...evento, estado: 'Cancelado', motivo: 'Operación anulada, excluida del control', cobro: null }
   }
@@ -16,7 +16,7 @@ export function clasificarEvento(evento, { cloverRows, mpRows }) {
 
   const resultado =
     evento.canal === CANAL.CLOVER
-      ? matchearEventoClover(evento, cloverRows)
+      ? matchearEventoClover(evento, cloverRows, mapeo)
       : matchearEventoMp(evento, mpRows)
 
   if (resultado.estado === null) {
