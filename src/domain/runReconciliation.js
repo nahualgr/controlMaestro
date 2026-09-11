@@ -12,6 +12,7 @@ export function ejecutarConciliacion({ ventaRows, cloverRows: cloverRowsCrudo, m
   const eventos = construirTodosLosEventos({ clover, mpDirecto })
   const resultados = clasificarTodos(eventos, { cloverRows, mpRows, mapeo })
   const cobrosSinVenta = encontrarCobrosSinVenta({ cloverRows, mpRows })
+  const ventasSinCobro = resultados.filter((r) => r.sinCobro)
 
   const resumen = {
     total: resultados.length,
@@ -20,7 +21,8 @@ export function ejecutarConciliacion({ ventaRows, cloverRows: cloverRowsCrudo, m
     error: resultados.filter((r) => r.estado === 'Error').length,
     cancelado: resultados.filter((r) => r.estado === 'Cancelado').length,
     cobrosSinVenta: cobrosSinVenta.length,
+    ventasSinCobro: ventasSinCobro.length,
   }
 
-  return { resultados, cobrosSinVenta, resumen }
+  return { resultados, cobrosSinVenta, ventasSinCobro, resumen }
 }

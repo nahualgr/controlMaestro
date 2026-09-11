@@ -24,6 +24,8 @@ export function resolverDividido(evento, { cloverRows, mpRows }) {
     return {
       estado: 'Error',
       motivo: 'Operación dividida: no se encontró el cobro declarado (terminal/autorización/cupón no coinciden con ningún cobro)',
+      correccion: 'Revisar manualmente el terminal, autorización y cupón cargados para esta venta dividida.',
+      diferenciaImporte: null,
       cobros: [],
     }
   }
@@ -34,16 +36,21 @@ export function resolverDividido(evento, { cloverRows, mpRows }) {
   // el declarado ya cubre (o supera) el ticket: no hubo un segundo cobro real
   if (importeDeclarado >= evento.importeTotal) {
     declarado._consumido = true
+    const diferenciaImporte = redondear(importeDeclarado - evento.importeTotal)
     if (importeDeclarado > evento.importeTotal) {
       return {
         estado: 'Error',
         motivo: `Operación dividida con exceso: el cobro declarado ($${importeDeclarado}) supera el importe del ticket ($${evento.importeTotal})`,
+        correccion: `Revisar Importe: el cobro declarado excede el ticket en $${diferenciaImporte}`,
+        diferenciaImporte,
         cobros: [declarado],
       }
     }
     return {
       estado: 'OK',
       motivo: 'Operación marcada como dividida pero cubierta por un único cobro declarado',
+      correccion: null,
+      diferenciaImporte: 0,
       cobros: [declarado],
     }
   }
@@ -55,6 +62,8 @@ export function resolverDividido(evento, { cloverRows, mpRows }) {
     return {
       estado: 'Error',
       motivo: `Operación dividida incompleta: cobro declarado $${importeDeclarado} de $${evento.importeTotal}, falta un complemento de $${remanente} que no se encontró en ningún canal`,
+      correccion: `Corregir: falta un cobro complementario de $${remanente} (no encontrado en Clover ni en Mercado Pago)`,
+      diferenciaImporte: -remanente,
       cobros: [declarado],
     }
   }
@@ -68,6 +77,8 @@ export function resolverDividido(evento, { cloverRows, mpRows }) {
     // si dos cobros distintos comparten el mismo importe remanente).
     estado: 'Revisar',
     motivo: `Operación dividida: declarado $${importeDeclarado} (${etiquetaCanal(evento.canal)}) + complemento $${remanente} (${etiquetaCanal(complemento.canal)}, no declarado en Ventas) = $${evento.importeTotal}. Verificar manualmente que el complemento asignado sea el correcto.`,
+    correccion: null,
+    diferenciaImporte: 0,
     cobros: [declarado, complemento.cobro],
   }
 }

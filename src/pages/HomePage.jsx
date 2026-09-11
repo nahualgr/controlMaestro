@@ -2,6 +2,7 @@ import FileUpload from '../components/FileUpload/FileUpload.jsx'
 import PairingStep from '../components/PairingStep/PairingStep.jsx'
 import SummaryPanel from '../components/SummaryPanel/SummaryPanel.jsx'
 import ResultsTable from '../components/ResultsTable/ResultsTable.jsx'
+import VentasSinCobroTable from '../components/VentasSinCobro/VentasSinCobroTable.jsx'
 import OrphanPaymentsTable from '../components/OrphanPaymentsTable/OrphanPaymentsTable.jsx'
 import ExportButton from '../components/ExportButton/ExportButton.jsx'
 import { useReconciliation } from '../state/ReconciliationContext.jsx'
@@ -36,6 +37,7 @@ export default function HomePage() {
           </div>
           <SummaryPanel resumen={resultado.resumen} />
           <ResultsTable resultados={resultado.resultados} />
+          <VentasSinCobroTable ventasSinCobro={resultado.ventasSinCobro} />
           <OrphanPaymentsTable cobrosSinVenta={resultado.cobrosSinVenta} />
         </>
       )}

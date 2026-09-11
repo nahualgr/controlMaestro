@@ -60,8 +60,10 @@ export default function ResultsTable({ resultados }) {
                 <th>Autorización</th>
                 <th>Cupón</th>
                 <th>Importe</th>
+                <th>Diferencia</th>
                 <th>Comprobante</th>
                 <th>Motivo</th>
+                <th>Corrección sugerida</th>
               </tr>
             </thead>
             <tbody>
@@ -76,13 +78,19 @@ export default function ResultsTable({ resultados }) {
                   <td>{r.autorizacion}</td>
                   <td>{r.cupon}</td>
                   <td>${r.importeTotal.toLocaleString('es-AR')}</td>
+                  <td className={r.diferenciaImporte ? 'text-danger fw-semibold' : 'text-muted'}>
+                    {r.diferenciaImporte === null || r.diferenciaImporte === undefined
+                      ? '—'
+                      : `$${r.diferenciaImporte.toLocaleString('es-AR')}`}
+                  </td>
                   <td>{r.filas.map((f) => f.comprobante).join(', ')}</td>
                   <td className="small text-muted">{r.motivo}</td>
+                  <td className="small text-muted">{r.correccion}</td>
                 </tr>
               ))}
               {filtrados.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="text-center text-muted py-4">
+                  <td colSpan={11} className="text-center text-muted py-4">
                     No hay resultados para este filtro.
                   </td>
                 </tr>

@@ -1,5 +1,9 @@
-// Genera el Excel final: hoja "Resumen" (columnas originales de Ventas +
-// Estado + Motivo) y hoja "Cobros sin venta".
+// Genera el Excel final con tres hojas:
+//  - "Resumen": columnas originales de Ventas + Estado + Motivo +
+//    Diferencia de Importe + Corrección sugerida.
+//  - "Ventas sin cobro": ventas que no encontraron ningún cobro asociado.
+//  - "Cobros sin venta": cobros de Clover/MP que no fueron asignados a
+//    ninguna venta.
 import * as XLSX from 'xlsx'
 
 const ESTADO_LABEL = {
@@ -9,7 +13,7 @@ const ESTADO_LABEL = {
   Cancelado: '⚪ Cancelado',
 }
 
-export function exportarResultado({ resultados, cobrosSinVenta }) {
+export function exportarResultado({ resultados, cobrosSinVenta, ventasSinCobro }) {
   const filasResumen = []
   for (const r of resultados) {
     for (const fila of r.filas) {
@@ -17,11 +21,26 @@ export function exportarResultado({ resultados, cobrosSinVenta }) {
         ...fila._original,
         Estado: ESTADO_LABEL[r.estado] ?? r.estado,
         Motivo: r.motivo ?? '',
+        'Diferencia de Importe': r.diferenciaImporte ?? '',
+        'Corrección sugerida': r.correccion ?? '',
       })
     }
   }
 
-  const filasHuerfanos = cobrosSinVenta.map((h) => ({
+  const filasVentasSinCobro = ventasSinCobro.flatMap((r) =>
+    r.filas.map((fila) => ({
+      Canal: r.canal === 'clover' ? 'Clover' : 'Mercado Pago directo',
+      Terminal: r.terminal,
+      Autorización: r.autorizacion,
+      Cupón: r.cupon,
+      Tarjeta: r.tarjeta,
+      Importe: r.importeTotal,
+      Comprobante: fila.comprobante,
+      Fecha: fila.fecha ? fila.fecha.toLocaleDateString('es-AR') : '',
+    }))
+  )
+
+  const filasCobrosSinVenta = cobrosSinVenta.map((h) => ({
     Canal: h.canal,
     Terminal: h.terminal,
     Autorización: h.autorizacion,
@@ -33,7 +52,8 @@ export function exportarResultado({ resultados, cobrosSinVenta }) {
 
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(filasResumen), 'Resumen')
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(filasHuerfanos), 'Cobros sin venta')
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(filasVentasSinCobro), 'Ventas sin cobro')
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(filasCobrosSinVenta), 'Cobros sin venta')
 
   const fechaHoy = new Date().toISOString().slice(0, 10)
   XLSX.writeFile(wb, `conciliacion_${fechaHoy}.xlsx`)

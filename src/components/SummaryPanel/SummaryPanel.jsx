@@ -23,7 +23,15 @@ export default function SummaryPanel({ resumen }) {
         <div className="col-12">
           <div className="alert alert-warning mb-0">
             Hay <strong>{resumen.cobrosSinVenta}</strong> cobro(s) sin venta correspondiente. Revisá la
-            pestaña "Cobros sin venta" más abajo.
+            tabla "Cobros sin venta" más abajo.
+          </div>
+        </div>
+      )}
+      {resumen.ventasSinCobro > 0 && (
+        <div className="col-12">
+          <div className="alert alert-warning mb-0">
+            Hay <strong>{resumen.ventasSinCobro}</strong> venta(s) sin cobro correspondiente. Revisá la
+            tabla "Ventas sin cobro" más abajo.
           </div>
         </div>
       )}
