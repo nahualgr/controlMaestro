@@ -1,4 +1,6 @@
-export default function VentasSinCobroTable({ ventasSinCobro }) {
+import { describirSugerenciaParaVenta } from '../../domain/reconciliation/orphanCrossMatcher.js'
+
+export default function VentasSinCobroTable({ ventasSinCobro, sugerenciasPorVenta }) {
   if (ventasSinCobro.length === 0) return null
 
   return (
@@ -16,6 +18,7 @@ export default function VentasSinCobroTable({ ventasSinCobro }) {
                 <th>Tarjeta</th>
                 <th>Importe</th>
                 <th>Comprobante</th>
+                <th>Posible coincidencia</th>
               </tr>
             </thead>
             <tbody>
@@ -28,6 +31,9 @@ export default function VentasSinCobroTable({ ventasSinCobro }) {
                   <td>{r.tarjeta}</td>
                   <td>${r.importeTotal.toLocaleString('es-AR')}</td>
                   <td>{r.filas.map((f) => f.comprobante).join(', ')}</td>
+                  <td className="small text-warning-emphasis">
+                    {describirSugerenciaParaVenta(sugerenciasPorVenta?.get(r.id))}
+                  </td>
                 </tr>
               ))}
             </tbody>

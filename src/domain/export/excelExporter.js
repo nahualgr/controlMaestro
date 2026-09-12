@@ -5,6 +5,7 @@
 //  - "Cobros sin venta": cobros de Clover/MP que no fueron asignados a
 //    ninguna venta.
 import * as XLSX from 'xlsx'
+import { describirSugerenciaParaVenta, describirSugerenciaParaCobro } from '../reconciliation/orphanCrossMatcher.js'
 
 const ESTADO_LABEL = {
   OK: '🟢 OK',
@@ -13,7 +14,7 @@ const ESTADO_LABEL = {
   Cancelado: '⚪ Cancelado',
 }
 
-export function exportarResultado({ resultados, cobrosSinVenta, ventasSinCobro }) {
+export function exportarResultado({ resultados, cobrosSinVenta, ventasSinCobro, sugerenciasPorVenta, sugerenciasPorCobro }) {
   const filasResumen = []
   for (const r of resultados) {
     for (const fila of r.filas) {
@@ -37,6 +38,7 @@ export function exportarResultado({ resultados, cobrosSinVenta, ventasSinCobro }
       Importe: r.importeTotal,
       Comprobante: fila.comprobante,
       Fecha: fila.fecha ? fila.fecha.toLocaleDateString('es-AR') : '',
+      'Posible coincidencia': describirSugerenciaParaVenta(sugerenciasPorVenta.get(r.id)),
     }))
   )
 
@@ -48,6 +50,7 @@ export function exportarResultado({ resultados, cobrosSinVenta, ventasSinCobro }
     Tarjeta: h.tarjeta,
     Importe: h.importe,
     Fecha: h.fecha ? h.fecha.toLocaleString('es-AR') : '',
+    'Posible coincidencia': describirSugerenciaParaCobro(sugerenciasPorCobro.get(h)),
   }))
 
   const wb = XLSX.utils.book_new()

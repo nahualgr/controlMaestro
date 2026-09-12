@@ -1,4 +1,6 @@
-export default function OrphanPaymentsTable({ cobrosSinVenta }) {
+import { describirSugerenciaParaCobro } from '../../domain/reconciliation/orphanCrossMatcher.js'
+
+export default function OrphanPaymentsTable({ cobrosSinVenta, sugerenciasPorCobro }) {
   if (cobrosSinVenta.length === 0) return null
 
   return (
@@ -16,6 +18,7 @@ export default function OrphanPaymentsTable({ cobrosSinVenta }) {
                 <th>Tarjeta</th>
                 <th>Importe</th>
                 <th>Fecha</th>
+                <th>Posible coincidencia</th>
               </tr>
             </thead>
             <tbody>
@@ -28,6 +31,9 @@ export default function OrphanPaymentsTable({ cobrosSinVenta }) {
                   <td>{h.tarjeta}</td>
                   <td>${h.importe.toLocaleString('es-AR')}</td>
                   <td>{h.fecha ? h.fecha.toLocaleString('es-AR') : ''}</td>
+                  <td className="small text-warning-emphasis">
+                    {describirSugerenciaParaCobro(sugerenciasPorCobro?.get(h))}
+                  </td>
                 </tr>
               ))}
             </tbody>

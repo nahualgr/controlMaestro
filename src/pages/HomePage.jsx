@@ -37,8 +37,8 @@ export default function HomePage() {
           </div>
           <SummaryPanel resumen={resultado.resumen} />
           <ResultsTable resultados={resultado.resultados} />
-          <VentasSinCobroTable ventasSinCobro={resultado.ventasSinCobro} />
-          <OrphanPaymentsTable cobrosSinVenta={resultado.cobrosSinVenta} />
+          <VentasSinCobroTable ventasSinCobro={resultado.ventasSinCobro} sugerenciasPorVenta={resultado.sugerenciasPorVenta} />
+          <OrphanPaymentsTable cobrosSinVenta={resultado.cobrosSinVenta} sugerenciasPorCobro={resultado.sugerenciasPorCobro} />
         </>
       )}
     </div>

@@ -5,6 +5,7 @@ import { construirTodosLosEventos } from './reconciliation/eventBuilder.js'
 import { clasificarTodos } from './reconciliation/classifier.js'
 import { encontrarCobrosSinVenta } from './reconciliation/orphanFinder.js'
 import { enriquecerTerminalesClover } from './config/terminalEnricher.js'
+import { sugerirCoincidenciasPorImporte } from './reconciliation/orphanCrossMatcher.js'
 
 export function ejecutarConciliacion({ ventaRows, cloverRows: cloverRowsCrudo, mpRows, mapeo, mapeoTerminales }) {
   const cloverRows = enriquecerTerminalesClover(cloverRowsCrudo, mapeoTerminales)
@@ -13,6 +14,7 @@ export function ejecutarConciliacion({ ventaRows, cloverRows: cloverRowsCrudo, m
   const resultados = clasificarTodos(eventos, { cloverRows, mpRows, mapeo })
   const cobrosSinVenta = encontrarCobrosSinVenta({ cloverRows, mpRows })
   const ventasSinCobro = resultados.filter((r) => r.sinCobro)
+  const { sugerenciasPorVenta, sugerenciasPorCobro } = sugerirCoincidenciasPorImporte(ventasSinCobro, cobrosSinVenta)
 
   const resumen = {
     total: resultados.length,
@@ -24,5 +26,5 @@ export function ejecutarConciliacion({ ventaRows, cloverRows: cloverRowsCrudo, m
     ventasSinCobro: ventasSinCobro.length,
   }
 
-  return { resultados, cobrosSinVenta, ventasSinCobro, resumen }
+  return { resultados, cobrosSinVenta, ventasSinCobro, sugerenciasPorVenta, sugerenciasPorCobro, resumen }
 }
