@@ -10,7 +10,7 @@ export function clasificarEvento(evento, { cloverRows, mpRows, mapeo }) {
     return {
       ...evento,
       estado: 'Cancelado',
-      motivo: 'Operación anulada, excluida del control',
+      motivo: 'Anulada, excluida',
       correccion: null,
       diferenciaImporte: null,
       cobro: null,
@@ -41,8 +41,8 @@ export function clasificarEvento(evento, { cloverRows, mpRows, mapeo }) {
     return {
       ...evento,
       estado: 'Error',
-      motivo: 'Venta sin cobro correspondiente',
-      correccion: 'Buscar manualmente en Clover/Mercado Pago un cobro con este importe y fecha; puede haberse cargado con datos incorrectos.',
+      motivo: 'Sin cobro correspondiente',
+      correccion: 'Buscar cobro por importe/fecha',
       diferenciaImporte: null,
       cobro: null,
       sinCobro: true,

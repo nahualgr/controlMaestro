@@ -2,6 +2,7 @@
 // Para QR, la Autorización de Clover no es confiable (se repite entre
 // billeteras distintas): se prioriza Cupón + Lote + Importe.
 import { esOperacionQr, normalizarNombreTarjetaClover } from '../normalizers/cardMapping.js'
+import { normalizarNumeroTexto } from '../normalizers/numericStringNormalizer.js'
 
 // `mapeo` es la configuración manual Clover -> Ventas armada por el usuario
 // (ver src/domain/config/cardMappingStore.js). Sin mapeo cargado, cualquier
@@ -19,11 +20,12 @@ export function matchearEventoClover(evento, cloverRows, mapeo) {
   )
 
   // 2) fallback para tarjeta: terminal + autorización + cupón exactos
+  //    (Autorización se compara sin ceros a la izquierda, ver numericStringNormalizer.js)
   if (!match) {
     match = candidatos.find(
       (c) =>
         c.terminal === evento.terminal &&
-        c.codigoAutorizacion === evento.autorizacion &&
+        normalizarNumeroTexto(c.codigoAutorizacion) === normalizarNumeroTexto(evento.autorizacion) &&
         c.cupon === evento.cupon
     )
   }
@@ -43,8 +45,8 @@ export function matchearEventoClover(evento, cloverRows, mapeo) {
     // validar el nombre de tarjeta, se manda a Revisar en vez de asumir nada
     return {
       estado: 'Revisar',
-      motivo: `La marca de Clover "${match.marcaTarjeta}" no tiene equivalencia configurada. Se conciliaron el resto de los datos, falta validar el nombre.`,
-      correccion: 'Ir al paso de emparejamiento (al subir los archivos) o a "Equivalencias guardadas" y asignarle un código de Ventas a esta marca.',
+      motivo: `Marca "${match.marcaTarjeta}" sin equivalencia`,
+      correccion: 'Emparejar marca en Configuración',
       diferenciaImporte,
       cobro: match,
     }
@@ -55,34 +57,19 @@ export function matchearEventoClover(evento, cloverRows, mapeo) {
   const problemas = []
 
   if (match.terminal !== evento.terminal) {
-    problemas.push({
-      mensaje: 'Terminal no coincide con Clover',
-      correccion: `Corregir Terminal: cargado ${evento.terminal}, según Clover debería ser ${match.terminal}`,
-    })
+    problemas.push({ mensaje: 'Terminal no coincide', correccion: `Terminal: ${evento.terminal}→${match.terminal}` })
   }
-  if (!esQr && match.codigoAutorizacion !== evento.autorizacion) {
-    problemas.push({
-      mensaje: 'Autorización no coincide con Clover',
-      correccion: `Corregir Autorización: cargada "${evento.autorizacion}", según Clover debería ser "${match.codigoAutorizacion}"`,
-    })
+  if (!esQr && normalizarNumeroTexto(match.codigoAutorizacion) !== normalizarNumeroTexto(evento.autorizacion)) {
+    problemas.push({ mensaje: 'Autorización no coincide', correccion: `Autorización: ${evento.autorizacion}→${match.codigoAutorizacion}` })
   }
   if (match.cupon !== evento.cupon) {
-    problemas.push({
-      mensaje: 'Cupón no coincide con Clover',
-      correccion: `Corregir Cupón: cargado ${evento.cupon}, según Clover debería ser ${match.cupon}`,
-    })
+    problemas.push({ mensaje: 'Cupón no coincide', correccion: `Cupón: ${evento.cupon}→${match.cupon}` })
   }
   if (nombreEsperado !== evento.tarjeta) {
-    problemas.push({
-      mensaje: `Nombre de tarjeta cargado ("${evento.tarjeta}") no coincide con la marca real ("${match.marcaTarjeta}" → configurado como "${nombreEsperado}")`,
-      correccion: `Corregir Tarjeta: cargada "${evento.tarjeta}", debería ser "${nombreEsperado}"`,
-    })
+    problemas.push({ mensaje: 'Tarjeta no coincide', correccion: `Tarjeta: ${evento.tarjeta}→${nombreEsperado}` })
   }
   if (diferenciaImporte !== 0) {
-    problemas.push({
-      mensaje: `Diferencia de importe: Ventas $${evento.importeTotal} vs Clover $${importeCobro}`,
-      correccion: `Corregir Importe: cargado $${evento.importeTotal}, el cobro real en Clover es $${importeCobro} (diferencia $${diferenciaImporte})`,
-    })
+    problemas.push({ mensaje: `Diferencia importe $${diferenciaImporte}`, correccion: `Importe: $${evento.importeTotal}→$${importeCobro}` })
   }
 
   if (problemas.length === 0) {

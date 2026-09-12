@@ -1,9 +1,12 @@
 // Matching del canal Mercado Pago directo. Clave exacta: Autorización de
-// Ventas === operation_id de MP. Tolerancia de importe: exacta (sin margen).
+// Ventas === operation_id de MP (comparados sin ceros a la izquierda, ya
+// que Ventas los recorta al cargar). Tolerancia de importe: exacta.
+import { normalizarNumeroTexto } from '../normalizers/numericStringNormalizer.js'
+
 export function matchearEventoMp(evento, mpRows) {
   const candidatos = mpRows.filter((m) => !m._consumido)
 
-  const match = candidatos.find((m) => m.operationId === evento.autorizacion)
+  const match = candidatos.find((m) => normalizarNumeroTexto(m.operationId) === normalizarNumeroTexto(evento.autorizacion))
 
   if (!match) {
     return { estado: null, motivo: null, cobro: null, correccion: null, diferenciaImporte: null }
@@ -14,16 +17,10 @@ export function matchearEventoMp(evento, mpRows) {
 
   const problemas = []
   if (diferenciaImporte !== 0) {
-    problemas.push({
-      mensaje: `Diferencia de importe: Ventas $${evento.importeTotal} vs Mercado Pago $${match.importe}`,
-      correccion: `Corregir Importe: cargado $${evento.importeTotal}, el cobro real en Mercado Pago es $${match.importe} (diferencia $${diferenciaImporte})`,
-    })
+    problemas.push({ mensaje: `Diferencia importe $${diferenciaImporte}`, correccion: `Importe: $${evento.importeTotal}→$${match.importe}` })
   }
   if (evento.cupon !== 0) {
-    problemas.push({
-      mensaje: `Cupón cargado como ${evento.cupon}, debería ser 0 para operaciones MPAGO`,
-      correccion: `Corregir Cupón: cargado ${evento.cupon}, debería ser 0`,
-    })
+    problemas.push({ mensaje: 'Cupón debería ser 0', correccion: `Cupón: ${evento.cupon}→0` })
   }
 
   if (problemas.length === 0) {

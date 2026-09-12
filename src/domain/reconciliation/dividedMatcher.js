@@ -13,6 +13,7 @@
 //      AMBOS canales (Clover y MP), ya que no hay otra clave declarada
 //      para identificarlo.
 import { CANAL } from '../normalizers/channelResolver.js'
+import { normalizarNumeroTexto } from '../normalizers/numericStringNormalizer.js'
 
 export function resolverDividido(evento, { cloverRows, mpRows }) {
   const declarado =
@@ -23,8 +24,8 @@ export function resolverDividido(evento, { cloverRows, mpRows }) {
   if (!declarado) {
     return {
       estado: 'Error',
-      motivo: 'Operación dividida: no se encontró el cobro declarado (terminal/autorización/cupón no coinciden con ningún cobro)',
-      correccion: 'Revisar manualmente el terminal, autorización y cupón cargados para esta venta dividida.',
+      motivo: 'Dividido sin cobro declarado',
+      correccion: 'Revisar terminal/autorización/cupón',
       diferenciaImporte: null,
       cobros: [],
     }
@@ -40,15 +41,15 @@ export function resolverDividido(evento, { cloverRows, mpRows }) {
     if (importeDeclarado > evento.importeTotal) {
       return {
         estado: 'Error',
-        motivo: `Operación dividida con exceso: el cobro declarado ($${importeDeclarado}) supera el importe del ticket ($${evento.importeTotal})`,
-        correccion: `Revisar Importe: el cobro declarado excede el ticket en $${diferenciaImporte}`,
+        motivo: `Dividido con exceso $${diferenciaImporte}`,
+        correccion: `Excede en $${diferenciaImporte}`,
         diferenciaImporte,
         cobros: [declarado],
       }
     }
     return {
       estado: 'OK',
-      motivo: 'Operación marcada como dividida pero cubierta por un único cobro declarado',
+      motivo: 'Dividido cubierto por un cobro',
       correccion: null,
       diferenciaImporte: 0,
       cobros: [declarado],
@@ -61,8 +62,8 @@ export function resolverDividido(evento, { cloverRows, mpRows }) {
   if (!complemento) {
     return {
       estado: 'Error',
-      motivo: `Operación dividida incompleta: cobro declarado $${importeDeclarado} de $${evento.importeTotal}, falta un complemento de $${remanente} que no se encontró en ningún canal`,
-      correccion: `Corregir: falta un cobro complementario de $${remanente} (no encontrado en Clover ni en Mercado Pago)`,
+      motivo: `Dividido incompleto, falta $${remanente}`,
+      correccion: `Falta cobro de $${remanente}`,
       diferenciaImporte: -remanente,
       cobros: [declarado],
     }
@@ -76,7 +77,7 @@ export function resolverDividido(evento, { cloverRows, mpRows }) {
     // sin ninguna clave declarada que lo confirme (podría haber ambigüedad
     // si dos cobros distintos comparten el mismo importe remanente).
     estado: 'Revisar',
-    motivo: `Operación dividida: declarado $${importeDeclarado} (${etiquetaCanal(evento.canal)}) + complemento $${remanente} (${etiquetaCanal(complemento.canal)}, no declarado en Ventas) = $${evento.importeTotal}. Verificar manualmente que el complemento asignado sea el correcto.`,
+    motivo: `Dividido: $${importeDeclarado} (${etiquetaCanal(evento.canal)}) + $${remanente} (${etiquetaCanal(complemento.canal)}, no declarado)`,
     correccion: null,
     diferenciaImporte: 0,
     cobros: [declarado, complemento.cobro],
@@ -90,7 +91,7 @@ function buscarDeclaradoEnClover(evento, cloverRows) {
 }
 
 function buscarDeclaradoEnMp(evento, mpRows) {
-  return mpRows.find((m) => !m._consumido && m.operationId === evento.autorizacion)
+  return mpRows.find((m) => !m._consumido && normalizarNumeroTexto(m.operationId) === normalizarNumeroTexto(evento.autorizacion))
 }
 
 function buscarComplementoPorImporte(remanente, { cloverRows, mpRows }) {
