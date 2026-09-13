@@ -91,7 +91,7 @@ function buscarDeclaradoEnClover(evento, cloverRows) {
 }
 
 function buscarDeclaradoEnMp(evento, mpRows) {
-  return mpRows.find((m) => !m._consumido && normalizarNumeroTexto(m.operationId) === normalizarNumeroTexto(evento.autorizacion))
+  return mpRows.find((m) => m.estado === 'approved' && !m._consumido && normalizarNumeroTexto(m.operationId) === normalizarNumeroTexto(evento.autorizacion))
 }
 
 function buscarComplementoPorImporte(remanente, { cloverRows, mpRows }) {
@@ -100,7 +100,7 @@ function buscarComplementoPorImporte(remanente, { cloverRows, mpRows }) {
   )
   if (enClover) return { cobro: enClover, canal: CANAL.CLOVER }
 
-  const enMp = mpRows.find((m) => !m._consumido && redondear(m.importe) === remanente)
+  const enMp = mpRows.find((m) => m.estado === 'approved' && !m._consumido && redondear(m.importe) === remanente)
   if (enMp) return { cobro: enMp, canal: CANAL.MP_DIRECTO }
 
   return null

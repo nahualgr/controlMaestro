@@ -22,8 +22,8 @@ export default function SummaryPanel({ resumen }) {
       {resumen.cobrosSinVenta > 0 && (
         <div className="col-12">
           <div className="alert alert-warning mb-0">
-            Hay <strong>{resumen.cobrosSinVenta}</strong> cobro(s) sin venta correspondiente. Revisá la
-            tabla "Cobros sin venta" más abajo.
+            Hay <strong>{resumen.cobrosSinVenta}</strong> cobro(s) sin venta correspondiente. Revisá las
+            tablas de Clover / Mercado Pago más abajo (filtrá por "Sin venta").
           </div>
         </div>
       )}
@@ -31,7 +31,7 @@ export default function SummaryPanel({ resumen }) {
         <div className="col-12">
           <div className="alert alert-warning mb-0">
             Hay <strong>{resumen.ventasSinCobro}</strong> venta(s) sin cobro correspondiente. Revisá la
-            tabla "Ventas sin cobro" más abajo.
+            columna "Posible coincidencia" en el detalle de conciliación.
           </div>
         </div>
       )}

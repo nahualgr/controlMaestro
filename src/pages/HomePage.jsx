@@ -2,8 +2,8 @@ import FileUpload from '../components/FileUpload/FileUpload.jsx'
 import PairingStep from '../components/PairingStep/PairingStep.jsx'
 import SummaryPanel from '../components/SummaryPanel/SummaryPanel.jsx'
 import ResultsTable from '../components/ResultsTable/ResultsTable.jsx'
-import VentasSinCobroTable from '../components/VentasSinCobro/VentasSinCobroTable.jsx'
-import OrphanPaymentsTable from '../components/OrphanPaymentsTable/OrphanPaymentsTable.jsx'
+import CloverStatusTable from '../components/CloverStatusTable/CloverStatusTable.jsx'
+import MpStatusTable from '../components/MpStatusTable/MpStatusTable.jsx'
 import ExportButton from '../components/ExportButton/ExportButton.jsx'
 import { useReconciliation } from '../state/ReconciliationContext.jsx'
 
@@ -36,9 +36,9 @@ export default function HomePage() {
             </div>
           </div>
           <SummaryPanel resumen={resultado.resumen} />
-          <ResultsTable resultados={resultado.resultados} />
-          <VentasSinCobroTable ventasSinCobro={resultado.ventasSinCobro} sugerenciasPorVenta={resultado.sugerenciasPorVenta} />
-          <OrphanPaymentsTable cobrosSinVenta={resultado.cobrosSinVenta} sugerenciasPorCobro={resultado.sugerenciasPorCobro} />
+          <ResultsTable resultados={resultado.resultados} sugerenciasPorVenta={resultado.sugerenciasPorVenta} />
+          <CloverStatusTable cloverRows={resultado.cloverRows} sugerenciasPorCobro={resultado.sugerenciasPorCobro} />
+          <MpStatusTable mpRows={resultado.mpRows} sugerenciasPorCobro={resultado.sugerenciasPorCobro} />
         </>
       )}
     </div>

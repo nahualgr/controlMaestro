@@ -32,6 +32,7 @@ export function parseMpWorkbook(arrayBuffer) {
       estado: (r[COL_ESTADO] ?? '').toString().trim().toLowerCase(),
       _original: r,
     }))
-    // solo se concilian operaciones aprobadas
-    .filter((r) => r.estado === 'approved')
+  // Nota: ya no se descartan acá las no-aprobadas — se necesitan todas para
+  // el reporte completo de Mercado Pago. El matching sigue usando solo
+  // "approved" (ver mpMatcher.js).
 }

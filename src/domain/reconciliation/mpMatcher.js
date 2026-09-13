@@ -4,7 +4,7 @@
 import { normalizarNumeroTexto } from '../normalizers/numericStringNormalizer.js'
 
 export function matchearEventoMp(evento, mpRows) {
-  const candidatos = mpRows.filter((m) => !m._consumido)
+  const candidatos = mpRows.filter((m) => m.estado === 'approved' && !m._consumido)
 
   const match = candidatos.find((m) => normalizarNumeroTexto(m.operationId) === normalizarNumeroTexto(evento.autorizacion))
 

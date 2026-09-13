@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { describirSugerenciaParaVenta } from '../../domain/reconciliation/orphanCrossMatcher.js'
 
 const ESTADO_BADGE = {
   OK: 'bg-success-subtle text-success-emphasis',
@@ -7,7 +8,7 @@ const ESTADO_BADGE = {
   Cancelado: 'bg-secondary-subtle text-secondary-emphasis',
 }
 
-export default function ResultsTable({ resultados }) {
+export default function ResultsTable({ resultados, sugerenciasPorVenta }) {
   const [filtroEstado, setFiltroEstado] = useState('Todos')
   const [busqueda, setBusqueda] = useState('')
 
@@ -64,6 +65,7 @@ export default function ResultsTable({ resultados }) {
                 <th>Comprobante</th>
                 <th>Motivo</th>
                 <th>Corrección sugerida</th>
+                <th>Posible coincidencia</th>
               </tr>
             </thead>
             <tbody>
@@ -86,11 +88,14 @@ export default function ResultsTable({ resultados }) {
                   <td>{r.filas.map((f) => f.comprobante).join(', ')}</td>
                   <td className="small text-muted">{r.motivo}</td>
                   <td className="small text-muted">{r.correccion}</td>
+                  <td className="small text-warning-emphasis">
+                    {r.sinCobro ? describirSugerenciaParaVenta(sugerenciasPorVenta?.get(r.id)) : ''}
+                  </td>
                 </tr>
               ))}
               {filtrados.length === 0 && (
                 <tr>
-                  <td colSpan={11} className="text-center text-muted py-4">
+                  <td colSpan={12} className="text-center text-muted py-4">
                     No hay resultados para este filtro.
                   </td>
                 </tr>
