@@ -4,7 +4,7 @@ import { separarVentasPorCanal } from './normalizers/channelResolver.js'
 import { construirTodosLosEventos } from './reconciliation/eventBuilder.js'
 import { clasificarTodos } from './reconciliation/classifier.js'
 import { enriquecerTerminalesClover } from './config/terminalEnricher.js'
-import { encontrarCobrosSinVentaCrudos, sugerirCoincidenciasPorImporte } from './reconciliation/orphanCrossMatcher.js'
+import { encontrarCobrosSinVentaCrudos, sugerirCoincidenciasPorImporte, resolverPorImporteYTarjeta } from './reconciliation/orphanCrossMatcher.js'
 
 export function ejecutarConciliacion({ ventaRows, cloverRows: cloverRowsCrudo, mpRows, mapeo, mapeoTerminales }) {
   const cloverRows = enriquecerTerminalesClover(cloverRowsCrudo, mapeoTerminales)
@@ -26,6 +26,12 @@ export function ejecutarConciliacion({ ventaRows, cloverRows: cloverRowsCrudo, m
       }
     }
   }
+
+  // segunda pasada: casos de cobro diferido (terminal/cupón/autorización
+  // cargados al azar porque el cobro real ocurre después) — se resuelven
+  // por importe + tarjeta cuando hay una única coincidencia posible.
+  const ventasSinCobroAntes = resultados.filter((r) => r.sinCobro)
+  resolverPorImporteYTarjeta(ventasSinCobroAntes, encontrarCobrosSinVentaCrudos(cloverRows, mpRows), mapeo)
 
   const ventasSinCobro = resultados.filter((r) => r.sinCobro)
   const cobrosSinVentaCrudos = encontrarCobrosSinVentaCrudos(cloverRows, mpRows)

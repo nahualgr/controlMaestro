@@ -30,6 +30,25 @@ export function matchearEventoClover(evento, cloverRows, mapeo) {
     )
   }
 
+  // 3) fallback: aflojar TERMINAL (puede estar mal cargado) — busca por
+  //    cupón + importe exactos. Solo se acepta si es único candidato, para
+  //    no adivinar entre varias operaciones con el mismo cupón e importe.
+  if (!match) {
+    const porCuponEImporte = candidatos.filter(
+      (c) => c.cupon === evento.cupon && c.importe + c.importeExtraCash === evento.importeTotal
+    )
+    if (porCuponEImporte.length === 1) match = porCuponEImporte[0]
+  }
+
+  // 4) fallback: aflojar CUPÓN (puede estar mal cargado) — busca por
+  //    terminal + importe exactos. Mismo criterio de unicidad.
+  if (!match) {
+    const porTerminalEImporte = candidatos.filter(
+      (c) => c.terminal === evento.terminal && c.importe + c.importeExtraCash === evento.importeTotal
+    )
+    if (porTerminalEImporte.length === 1) match = porTerminalEImporte[0]
+  }
+
   if (!match) {
     return { estado: null, motivo: null, cobro: null, correccion: null, diferenciaImporte: null }
   }
